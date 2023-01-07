@@ -19,8 +19,9 @@ logger:
 
 uart:
   id: uart_bus
-#  tx_pin: GPIO15 #D8 to tx pin on mcu board
-  rx_pin: GPIO13 #D7 to rx pin on mcu board
+#  tx_pin: GPIO15 #D8 to tx pin on mcu board - doesnt work for some reason, but not needed anyway.
+#something to do w/ being an 8266.  If it was an ESP32 then I think both lines could be monitored.
+  rx_pin: GPIO13 #D7 to rx pin on mcu board.  We only care about data sent by display unit.
   baud_rate: 2400
   rx_buffer_size: 80
   # stop_bits: 2
