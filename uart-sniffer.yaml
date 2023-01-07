@@ -1,0 +1,105 @@
+substitutions:
+  device_name: "dev-wood-pellet-stove"
+  device_description: dev Wood Pellet Stove running ESPHome
+  friendly_name: dev Wood Pellet Stove
+  loc: dev #location
+esphome:
+  name: "uart-sniffer"
+  includes:
+    - uart_read_line_sensor.h
+web_server:
+  port: 80
+
+esp8266:
+  board: nodemcu
+
+logger:
+  level: VERBOSE #makes uart stream available in esphome logstream
+  baud_rate: 0 #disable logging over uart
+
+uart:
+  id: uart_bus
+#  tx_pin: GPIO15 #D8 to tx pin on mcu board
+  rx_pin: GPIO13 #D7 to rx pin on mcu board
+  baud_rate: 2400
+  rx_buffer_size: 80
+  # stop_bits: 2
+  # data_bits: 7
+  # parity: ODD
+  debug:
+    direction: RX
+    dummy_receiver: true
+    after:
+      delimiter: [0xCC, 0x33]
+    sequence:
+      - lambda: |-
+          UARTDebug::log_hex(direction, bytes, ' ');  
+          //Still log the data     
+          //Some packets have 5 bytes  
+          //might have to make this 3 if delimitar bytes get removed....
+          if (bytes.size()==5) {
+              if(bytes[0]==0xAA && bytes[1]==0x00) {
+              //id(rawString).publish_state("Heartbeat");
+              //4B heartbeat, ignore
+              if(bytes[2]==0x6A)
+                id(rawString).publish_state("Goodbye!");              
+              if(bytes[2]==0x69)
+                id(rawString).publish_state("Cleaning");
+              if(bytes[2]==0x63)
+                id(rawString).publish_state("Cleaning after Error cleared");
+              if(bytes[2]==0x65)
+                id(rawString).publish_state("Lighting");
+              if(bytes[2]==0x66)
+                id(rawString).publish_state("Stabilization");
+              if(bytes[2]==0x67)
+                id(rawString).publish_state("Stabilization");
+              if(bytes[2]==0x62)
+                id(rawString).publish_state("Switching OFF");
+              if(bytes[2]==0x67)
+                id(rawString).publish_state("Cooling");                
+            }              
+          }
+          //Some packets have 6 bytes
+          if (bytes.size()==6) {
+            if(bytes[1]==0x01 && bytes[2]==0x49 && bytes[3]==0x80) 
+              id(rawString).publish_state("Stabilization"); 
+            if(bytes[1]==0x01 && bytes[2]==0x49 && bytes[3]==0x81) 
+              id(rawString).publish_state("ECO2"); 
+            if(bytes[1]==0x01 && bytes[2]==0x48 && bytes[3]==0x80) 
+              id(rawString).publish_state("ECO1"); 
+            if(bytes[1]==0x01 && bytes[2]==0x48 && bytes[3]==0xC0) 
+              id(rawString).publish_state("Idling - ECO2"); 
+            if(bytes[1]==0x01 && bytes[2]==0x48 && bytes[3]==0x83) 
+              id(rawString).publish_state("ECO1"); 
+            if(bytes[1]==0x01 && bytes[2]==0x48 && bytes[3]==0xC3) 
+              id(rawString).publish_state("ECO2"); 
+            if(bytes[1]==0x01 && bytes[2]==0x49 && bytes[3]==0x81) 
+              id(rawString).publish_state("Idling - ECO2");               
+          }
+text_sensor:
+- platform: template
+  id: rawString
+  name: ${loc}_display_text_sensor
+  on_value:   # When value simply changes
+      then:
+        - logger.log: 
+            format: "text_sensor = %s"
+            args: ['id(rawString)']      
+# Enable Home Assistant API
+
+api:
+
+ota:
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esphome-Web-360942"
+    password: !secret wifi_password
+
+captive_portal:
+    
