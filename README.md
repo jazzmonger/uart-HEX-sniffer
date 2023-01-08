@@ -7,3 +7,5 @@ I used to work for Chevron way back in 1988. I was certified on a tool called a 
 That certainly helped me set up the config files for ESPHome and decipher the data stream.   There are lots of examples of doing this using TEXT.  But my data is in HEX.  And very few examples of it in action.  Hopefully this helps someone else.
 
 Full breakdown  of getting this working is here: https://github.com/jazzmonger/uart-HEX-sniffer/discussions/1
+
+![20230107_171807](https://user-images.githubusercontent.com/52110065/211175237-b8ee0af2-388a-4f85-9ef9-2a3f83a19e55.GIF)
